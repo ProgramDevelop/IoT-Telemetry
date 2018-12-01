@@ -1,20 +1,16 @@
 ﻿using System;
+using Telemetry.Base;
+using Telemetry.Base.Interfaces;
 
 namespace Telemetry.Database.Models
-{
-    public enum ValueType
-    {
-        String = 0,
-        Number = 1,
-    }
-    
-    public class SensorValue
+{  
+    public class SensorValue : ISensorValue
     {
         public Guid Id { get; set; }
         public Guid SensorId { get; set; }
         public Sensor Sensor { get; set; }
         public string Name { get; set; }
-        public ValueType Type { get; set; }
+        public PayloadType Type { get; set; }
         public string Value { get; set; }
     }
 }

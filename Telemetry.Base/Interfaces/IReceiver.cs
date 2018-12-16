@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Telemetry.Base.Interfaces
 {
@@ -25,12 +27,26 @@ namespace Telemetry.Base.Interfaces
         #region Actions
 
         /// <summary>
-        /// Sends data to the collection server
+        /// Start up receiver
         /// </summary>
-        /// <param name="sensorId">Id of the sensor</param>
-        /// <param name="payload">The collection of data from the sensor</param>
+        /// <param name="token">Receiver Stop Token</param>
         /// <returns></returns>
-        bool Send(Guid sensorId, IEnumerable<ISensorValue> payload);
+        Task StartAsync(CancellationToken token);
+
+        /// <summary>
+        /// Stops the receiver
+        /// </summary>
+        /// <returns></returns>
+        Task StopAsync();
+
+        #endregion
+        
+        #region Events
+
+        /// <summary>
+        /// Reports that a message has arrived from the sensors.
+        /// </summary>
+        event Action<Guid, IEnumerable<ISensorValue>> OnMessageReceive;
 
         #endregion
     }

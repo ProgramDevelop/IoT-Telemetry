@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Telemetry.Database;
 using Telemetry.Database.Models;
-using Telemetry.Web.Models.ViewModels;
+using Telemetry.Web.ViewModels.Sensor;
 
 namespace Telemetry.Web.Controllers
 {
@@ -18,13 +18,13 @@ namespace Telemetry.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Sensor()
+        public IActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
-        public Task<IActionResult> CreateSensor(SensorModel model)
+        public Task<IActionResult> Create(SensorModel model)
         {
             if (ModelState.IsValid)
             {
@@ -47,7 +47,13 @@ namespace Telemetry.Web.Controllers
             return View(model);
         }
 
-        public Task<IActionResult> DeleteSensor(Sensor model)
+        [HttpGet]
+        public IActionResult Delete()
+        {
+            return View();
+        }
+
+        public Task<IActionResult> Delete(Sensor model)
         {
             if (ModelState.IsValid)
             {

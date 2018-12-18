@@ -1,9 +1,9 @@
 ﻿@{
     ViewData["Title"] = "Sensor Controller";
 }
-@model Telemetry.Web.Models.ViewModels.SensorModel
+@model Telemetry.Web.ViewModels.Sensor.SensorModel
 
-<form asp-action="CreateSensor" asp-controller="Sensor" asp-anti-forgery="true">
+<form asp-action="Create" asp-controller="Sensor" asp-anti-forgery="true">
     <div class="validation" asp-validation-summary="ModelOnly" />
     <div>
         <div>

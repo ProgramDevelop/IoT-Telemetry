@@ -9,6 +9,9 @@ namespace Telemetry.Database.Models
         public Guid Id { get; set; }
         public Guid SensorId { get; set; }
         public Sensor Sensor { get; set; }
+
+        public DateTime DateTime { get; set; }
+
         public string Name { get; set; }
         public PayloadType Type { get; set; }
         public string Value { get; set; }

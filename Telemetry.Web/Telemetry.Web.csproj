@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Telemetry.Database\Telemetry.Database.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Telemetry.Database\Telemetry.Database.csproj" />
+  </ItemGroup>
+
 </Project>

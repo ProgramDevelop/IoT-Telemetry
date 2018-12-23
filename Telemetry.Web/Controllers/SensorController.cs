@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Telemetry.Database;
 using Telemetry.Database.Models;
@@ -8,6 +9,7 @@ using Telemetry.Web.ViewModels.Sensor;
 
 namespace Telemetry.Web.Controllers
 {
+    [Authorize]
     public class SensorController : Controller
     {
         private readonly TelemetryContext _db;
@@ -18,13 +20,32 @@ namespace Telemetry.Web.Controllers
         }
 
         [HttpGet]
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Index(SensorModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userId = User.Identity.Name;
+                var listSensors = _db.Sensors.Where(r => r.UserId == Guid.Parse(userId));
+            }
+
+            return View(model);
+        }
+
+
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
-        public Task<IActionResult> Create(SensorModel model)
+        public async Task<IActionResult> Create(SensorModel model)
         {
             if (ModelState.IsValid)
             {
@@ -33,15 +54,13 @@ namespace Telemetry.Web.Controllers
 
                 var sensor = new Sensor
                 {
-                    Id = Guid.NewGuid(),
-                    UserId = Guid.Parse(userId),
-                    User = user,
+                    UserId = user.Id,
                     Name = model.Name,
                     Description = model.Description
                 };
 
                 _db.Sensors.Add(sensor);
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
             }
 
             return View(model);
@@ -53,7 +72,7 @@ namespace Telemetry.Web.Controllers
             return View();
         }
 
-        public Task<IActionResult> Delete(Sensor model)
+        public async Task<IActionResult> Delete(Sensor model)
         {
             if (ModelState.IsValid)
             {
@@ -69,8 +88,7 @@ namespace Telemetry.Web.Controllers
                 }
             }
 
-            return View(model);
+            return RedirectToAction("Index", "Sensor");
         }
-
     }
 }

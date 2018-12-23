@@ -46,7 +46,7 @@ namespace Telemetry.Base.Interfaces
         /// <summary>
         /// Reports that a message has arrived from the sensors.
         /// </summary>
-        event Action<Guid, IEnumerable<ISensorValue>> OnMessageReceive;
+        event Action<Guid, IEnumerable<ISensorData>> OnMessageReceive;
 
         #endregion
     }

@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 namespace Telemetry.Web.ViewModels.Sensor
 {
-    //TODO Перенести ViewModels уточнить
+
     public class SensorModel
     {
 
         [Required(ErrorMessage = "Название датчика не может быть пустым!")]
         [DataType(DataType.Custom)]
         public string Name { get; set; }
-
 
         [Required(ErrorMessage = "Описание не может быть пустым!")]
         [DataType(DataType.MultilineText)]

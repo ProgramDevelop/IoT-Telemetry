@@ -38,6 +38,31 @@ namespace Telemetry.Web.Controllers
         }
 
 
+        [HttpPost("SetValue")]
+        public async Task<IActionResult> SetSensorValue(SetSensorValueModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var sensor = _db.Sensors.FirstOrDefault(r => r.Id == Guid.Parse(model.SensorId));
+                var sensorValue = new SensorValue
+                {
+                    SensorId = Guid.Parse(model.SensorId),
+                    Name = model.Name,
+                    Type = model.Type,
+                    Value = model.Value,
+                    DateTime = DateTime.Now,
+                    Sensor = sensor
+                };
+
+                _db.SensorValues.Add(sensorValue);
+                await _db.SaveChangesAsync();
+                return Ok();
+            }
+            
+            return NotFound();
+        }
+
+
         [HttpGet]
         public IActionResult Create()
         {

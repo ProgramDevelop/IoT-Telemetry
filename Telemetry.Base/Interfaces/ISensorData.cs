@@ -5,16 +5,16 @@ namespace Telemetry.Base.Interfaces
     /// <summary>
     /// Describes the sensor data interface
     /// </summary>
-    public interface IValueType
+    public interface ISensorData
     {
         /// <summary>
-        /// The value name from the sensor
+        /// Value from the sensor
         /// </summary>
-        string Name { get; set; }
+        string Data { get; set; }
 
         /// <summary>
-        /// Type of data from the sensor
+        /// Time at which values were obtained
         /// </summary>
-        PayloadType Type { get; set; }
+        DateTime DateTime { get; set; }
     }
 }

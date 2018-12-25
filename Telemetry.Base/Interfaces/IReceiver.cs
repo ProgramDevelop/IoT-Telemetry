@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Telemetry.Base.Interfaces
@@ -29,15 +27,14 @@ namespace Telemetry.Base.Interfaces
         /// <summary>
         /// Start up receiver
         /// </summary>
-        /// <param name="token">Receiver Stop Token</param>
         /// <returns></returns>
-        Task StartAsync(CancellationToken token);
+        void Start();
 
         /// <summary>
         /// Stops the receiver
         /// </summary>
         /// <returns></returns>
-        Task StopAsync();
+        void Stop();
 
         #endregion
         
@@ -46,7 +43,7 @@ namespace Telemetry.Base.Interfaces
         /// <summary>
         /// Reports that a message has arrived from the sensors.
         /// </summary>
-        event Action<Guid, IEnumerable<ISensorValue>> OnMessageReceive;
+        event Action<MessageEventArgs> OnMessageReceive;
 
         #endregion
     }

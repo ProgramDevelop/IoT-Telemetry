@@ -34,12 +34,16 @@ namespace Telemetry.Database
             modelBuilder.Entity<Sensor>().Property(s => s.Description).HasMaxLength(250);
             modelBuilder.Entity<Sensor>().HasOne(s => s.User).WithMany(u => u.Sensors).HasForeignKey(s => s.UserId);
 
-            modelBuilder.Entity<SensorValue>().HasKey(sv => sv.Id);
-            modelBuilder.Entity<SensorValue>().Property(sv => sv.DateTime).IsRequired();
-            modelBuilder.Entity<SensorValue>().Property(sv => sv.Name).HasMaxLength(50).IsRequired();
-            modelBuilder.Entity<SensorValue>().Property(sv => sv.Type).IsRequired();
-            modelBuilder.Entity<SensorValue>().Property(sv => sv.Value).HasMaxLength(100).IsRequired();
-            modelBuilder.Entity<SensorValue>().HasOne(sv => sv.Sensor).WithMany(s => s.Values).HasForeignKey(sv => sv.SensorId);
+            modelBuilder.Entity<ValueType>().HasKey(sv => sv.Id);
+            modelBuilder.Entity<ValueType>().HasAlternateKey(s => new { s.SensorId, s.Name });
+            modelBuilder.Entity<ValueType>().Property(sv => sv.Name).HasMaxLength(50).IsRequired();
+            modelBuilder.Entity<ValueType>().Property(sv => sv.Type).IsRequired();
+            modelBuilder.Entity<ValueType>().HasOne(sv => sv.Sensor).WithMany(s => s.Values).HasForeignKey(sv => sv.SensorId);
+
+            modelBuilder.Entity<Value>().HasKey(v => v.Id);
+            modelBuilder.Entity<Value>().Property(v => v.DateTime).IsRequired();
+            modelBuilder.Entity<Value>().Property(v => v.Data).HasMaxLength(100).IsRequired();
+            modelBuilder.Entity<Value>().HasOne(v => v.ValueType).WithMany(s => s.Values).HasForeignKey(sv => sv.ValueTypeId);
 
             base.OnModelCreating(modelBuilder);
         }
@@ -52,7 +56,10 @@ namespace Telemetry.Database
 
         public DbSet<Sensor> Sensors { get; set; }
 
-        public DbSet<SensorValue> SensorValues { get; set; }
+        public DbSet<ValueType> ValueTypes { get; set; }
+
+        public DbSet<Value> Values { get; set; }
+
 
         #endregion
     }

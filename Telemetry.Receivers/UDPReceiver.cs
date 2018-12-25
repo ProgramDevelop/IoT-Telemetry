@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Telemetry.Base.Interfaces;
 
 namespace Telemetry.Receivers
 {
@@ -12,32 +13,40 @@ namespace Telemetry.Receivers
         private IPAddress ipaddress;
         private IPEndPoint ipendpoint_sender;
         private Thread rec = null;
-        private UdpClient udp = new UdpClient(15000);
+        private UdpClient udp;
 
         private bool stopReceive = false;
 
-        private string m_name;
-        private string m_description;
+        #region Constructors
 
-        private UDPReceiver() { }
-
-        public UDPReceiver(string name, string description)
+        public UDPReceiver() : this("UdpReceiver", "", 15000)
         {
-            m_name = name;
-            m_description = description;
         }
 
-        public string Name
+        public UDPReceiver(string name, string description, int port)
         {
-            get { return m_name; }
+            Name = name;
+            Description = description;
+            udp = new UdpClient(port);
         }
 
-        public string Description
-        {
-            get { return m_description; }
-        }
+        #endregion
 
-        public Task StartAsync(CancellationToken token)
+        #region Properties
+
+        public string Name { get; }
+
+        public string Description { get; }
+
+        #endregion
+
+        #region Events
+
+        public event Action<MessageEventArgs> OnMessageReceive = e => { };
+
+        #endregion
+
+        public void Start()
         {
             // Запускаем отдельный поток для асинхронной работы приложения
             // во время приема сообщений
@@ -68,7 +77,7 @@ namespace Telemetry.Receivers
             }
         }
 
-        public Task StopAsync()
+        public void Stop()
         {
             stopReceive = true;
             if (udp != null) udp.Close();

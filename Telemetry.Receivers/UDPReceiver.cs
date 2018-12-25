@@ -10,16 +10,19 @@ namespace Telemetry.Receivers
 {
     public class UDPReceiver : IReceiver
     {
-        private IPAddress ipaddress;
-        private IPEndPoint ipendpoint_sender;
-        private Thread rec = null;
-        private UdpClient udp;
+        #region Private Fields
 
-        private bool stopReceive = false;
+        private IPAddress _ipaddress;
+        private IPEndPoint _ipendpointSender;
+        private Thread _rec = null;
+        private UdpClient _udp;
+        private bool _stopReceive = false;
+
+        #endregion
 
         #region Constructors
 
-        public UDPReceiver() : this("UdpReceiver", "", 15000)
+        public UDPReceiver() : this("UdpReceiver", "", 2000)
         {
         }
 
@@ -27,7 +30,7 @@ namespace Telemetry.Receivers
         {
             Name = name;
             Description = description;
-            udp = new UdpClient(port);
+            _udp = new UdpClient(port);
         }
 
         #endregion
@@ -50,25 +53,33 @@ namespace Telemetry.Receivers
         {
             // Запускаем отдельный поток для асинхронной работы приложения
             // во время приема сообщений
-            stopReceive = false;
-            rec = new Thread(new ThreadStart(Receive));
-            rec.Start();
+            _stopReceive = false;
+            _rec = new Thread(new ThreadStart(Receive));
+            _rec.Start();
         }
 
         public void Receive()
         {
             try
             {
-                while (true)
+                while (!_stopReceive)
                 {
                     IPEndPoint ipendpoint = null;
-                    byte[] message = udp.Receive(ref ipendpoint);
+                    byte[] message = _udp.Receive(ref ipendpoint);
 
                     // Анкодинг:
                     string text = Encoding.Default.GetString(message);
 
-                    // Если дана команда остановить поток, останавливаем бесконечный цикл.
-                    if (stopReceive == true) break;
+                    // GET_ID_1231
+                    string[] textArr = text.Split('_');
+
+                    var obj = new MessageEventArgs();
+                    obj.SensorId = new Guid(textArr[0]);
+                    obj.ValueName = textArr[1];
+                    obj.Payload = new SensorData { DateTime = DateTime.Now, Data = textArr[2] };
+
+                    OnMessageReceive(obj);
+
                 }
             }
             catch (Exception e)
@@ -79,21 +90,9 @@ namespace Telemetry.Receivers
 
         public void Stop()
         {
-            stopReceive = true;
-            if (udp != null) udp.Close();
-            if (rec != null) rec.Join();
-        }
-
-        private void SendMessage(string text)
-        {
-            UdpClient udp = new UdpClient();
-
-            // Формирование отправляемого сообщения и его отправка:
-            byte[] message = Encoding.Default.GetBytes(text);
-            int sended = udp.Send(message, message.Length, ipendpoint_sender);
-
-            // Закрытие потока:
-            udp.Close();
+            _stopReceive = true;
+            if (_udp != null) _udp.Close();
+            if (_rec != null) _rec.Join();
         }
     }
 }

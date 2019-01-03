@@ -1,18 +1,19 @@
-﻿using System.Linq;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Telemetry.Database
 {
-    public interface IRepository<TEntity> where TEntity: class
+    public interface IRepository<TEntity> where TEntity: class, IEntity
     {
         IQueryable<TEntity> GetAll();
 
-        Task<TEntity> GetByIdAsync(int id);
+        Task<TEntity> GetByIdAsync(Guid id);
 
-        Task CreateAsync(TEntity entity);
+        Task<bool> CreateAsync(TEntity entity);
 
-        Task UpdateAsync(int id, TEntity entity);
+        Task<bool> UpdateAsync(Guid id, TEntity entity);
 
-        Task DeleteAsync(int id);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

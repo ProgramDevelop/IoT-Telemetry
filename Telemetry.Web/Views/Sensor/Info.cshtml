@@ -1,0 +1,6 @@
+﻿@model Telemetry.Web.ViewModels.Sensor.SensorViewModel
+@{
+    ViewData["Title"] = $"Информация о датчике {Model.Name}";
+}
+
+@Html.ActionLink("Добавить значения", "AddValueType", "Sensor", new { id = Model.Id })

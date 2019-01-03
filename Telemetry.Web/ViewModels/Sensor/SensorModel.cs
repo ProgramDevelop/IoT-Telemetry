@@ -1,23 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Telemetry.Web.ViewModels.Sensor
 {
-    //TODO Перенести ViewModels уточнить
-    public class SensorModel
+    public class SensorViewModel
     {
+        public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Название датчика не может быть пустым!")]
-        [DataType(DataType.Custom)]
+        [DataType(DataType.Text)]
         public string Name { get; set; }
 
-
-        [Required(ErrorMessage = "Описание не может быть пустым!")]
         [DataType(DataType.MultilineText)]
         public string Description { get; set; }
-
     }
 }

@@ -1,2 +1,25 @@
-﻿@{
+﻿@model Telemetry.Web.ViewModels.Sensor.SensorViewModel[]
+@{
+    ViewData["Title"] = "Список датчиков";
 }
+<div class="row">
+    <div class="col-md-12">
+        @Html.ActionLink("Добавить датчик", "Create", "Sensor")
+    </div>
+    <div class="col-md-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Описание</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var sensor in Model)
+                {
+                    <tr><td>@Html.ActionLink(sensor.Name, "Info", "Sensor", new { id = sensor.Id })</td><td>@sensor.Description</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Telemetry.Database;
+using Telemetry.Web.Services.Auth;
 
 namespace Telemetry.Web
 {
@@ -41,6 +42,9 @@ namespace Telemetry.Web
               {
                   options.LoginPath = new PathString("/User/Login");
               });
+
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IAuthService, AuthService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

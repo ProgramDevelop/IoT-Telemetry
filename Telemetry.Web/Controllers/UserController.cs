@@ -1,25 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Telemetry.Database;
 using Telemetry.Database.Models;
+using Telemetry.Web.Services.Auth;
 using Telemetry.Web.ViewModels.User;
 
 namespace Telemetry.Web.Controllers
 {
     public class UserController : Controller
     {
-        private readonly TelemetryContext _db;
+        private readonly IAuthService _authService;
+        private readonly IUserRepository _userRepository;
 
-        public UserController(TelemetryContext context)
+        public UserController(IAuthService authService, IUserRepository repository)
         {
-            _db = context;
+            _authService = authService;
+            _userRepository = repository;
         }
 
         [HttpGet]
@@ -34,44 +34,48 @@ namespace Telemetry.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
-                if (user != null)
+                if (_authService.CheckCredentials(model.Email, model.Password))
                 {
+                    var user = _userRepository.GetUserByEmail(model.Email);
                     await Authenticate(user); // аутентификация
-
                     return RedirectToAction("Index", "Home");
                 }
                 ModelState.AddModelError("", "Некорректные логин и(или) пароль");
             }
             return View(model);
         }
+
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-                if (user == null)
+                if (_authService.Register(model.Email, model.Password))
                 {
-                    user = new User { Email = model.Email, Password = model.Password };
-                    // добавляем пользователя в бд
-                    _db.Users.Add(user);
-                    await _db.SaveChangesAsync();
-
+                    var user = _userRepository.GetUserByEmail(model.Email);
                     await Authenticate(user); // аутентификация
-
                     return RedirectToAction("Index", "Home");
                 }
                 else
-                    ModelState.AddModelError("", "Некорректные логин и(или) пароль");
+                {
+                    ModelState.AddModelError("EmailExist", "Данный Email уже зарегистрирован");
+                }
             }
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
         }
 
         private async Task Authenticate(User user)
@@ -85,12 +89,6 @@ namespace Telemetry.Web.Controllers
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
             // установка аутентификационных куки
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
-        }
-
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Account");
         }
     }
 }

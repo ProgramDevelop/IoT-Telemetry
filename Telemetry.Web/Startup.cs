@@ -34,7 +34,7 @@ namespace Telemetry.Web
             });
 
             string connection = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<TelemetryContext>(options => options.UseMySql(connection));
+            services.AddDbContext<TelemetryContext>(options => options.UseSqlite(connection));
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
               .AddCookie(options =>

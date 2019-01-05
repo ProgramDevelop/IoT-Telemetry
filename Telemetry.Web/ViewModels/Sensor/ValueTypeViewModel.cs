@@ -6,6 +6,20 @@ namespace Telemetry.Web.ViewModels.Sensor
 {
     public class ValueTypeViewModel
     {
+        public ValueTypeViewModel()
+        {
+        }
+
+        public ValueTypeViewModel(Database.Models.ValueType valueType)
+        {
+            Id = valueType.Id;
+            Name = valueType.Name;
+            Type = valueType.Type;
+            SensorId = valueType.SensorId;
+        }
+
+        public Guid Id { get; set; }
+
         /// <summary>
         /// Id датчика
         /// </summary>

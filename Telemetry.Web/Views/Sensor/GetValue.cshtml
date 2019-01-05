@@ -1,0 +1,22 @@
+﻿@model Telemetry.Web.ViewModels.Sensor.SensorValuesList
+@{
+    ViewData["Title"] = $"";
+}
+<div class="row">
+    <div class="col-md-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Данные</th>
+                    <th>Время</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var value in Model.Values)
+                {
+                    <tr><td>@value.Data</td><td>@value.DateTime</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

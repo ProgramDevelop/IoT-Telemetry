@@ -42,25 +42,21 @@ namespace Telemetry.Web.Controllers
         {
             var sensor = await _db.Sensors.FirstOrDefaultAsync(s => s.Id == id);
 
-            return View(new SensorViewModel
-            {
-                Id = sensor.Id,
-                Name = sensor.Name,
-                Description = sensor.Description
-            });
+            var values = await _db.ValueTypes.Where(vt => vt.SensorId == sensor.Id).ToArrayAsync();
+
+            return View(new SensorInfoViewModel(sensor, values));
         }
 
-        [HttpGet("{id}/Values")]
-        public async Task<IActionResult> GetValues(Guid id)
+        [HttpGet("{id}/Value/{name}")]
+        public async Task<IActionResult> GetValue(Guid id, string name)
         {
-            var sensor = await _db.Sensors.FirstOrDefaultAsync(s => s.Id == id);
+            var value = await _db.ValueTypes.FirstOrDefaultAsync(s => s.SensorId == id && s.Name == name);
 
-            return View(new SensorViewModel
-            {
-                Id = sensor.Id,
-                Name = sensor.Name,
-                Description = sensor.Description
-            });
+            var values = await _db.Values.Where(v => v.ValueTypeId == value.Id).ToArrayAsync();
+
+            var model = new SensorValuesList(value, values);
+
+            return View(model);
         }
 
         [HttpGet("{id}/Add")]
@@ -79,12 +75,17 @@ namespace Telemetry.Web.Controllers
 
                 var sensor = await _db.Sensors.FirstOrDefaultAsync(s => s.Id == model.SensorId);
 
-                return View(new SensorViewModel
+                var value = new Database.Models.ValueType
                 {
-                    Id = sensor.Id,
-                    Name = sensor.Name,
-                    Description = sensor.Description
-                });
+                    SensorId = sensor.Id,
+                    Type = model.Type,
+                    Name = model.Name
+                };
+
+                await _db.ValueTypes.AddAsync(value);
+                await _db.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Info), new { id = sensor.Id });
 
             }
             return View(model);

@@ -50,9 +50,13 @@ namespace Telemetry.Web.Controllers
         [HttpGet("{id}/Value/{name}")]
         public async Task<IActionResult> GetValue(Guid id, string name)
         {
-            var value = await _db.ValueTypes.FirstOrDefaultAsync(s => s.Id == id && s.Name == name);
+            var value = await _db.ValueTypes.FirstOrDefaultAsync(s => s.SensorId == id && s.Name == name);
 
-            return View();
+            var values = await _db.Values.Where(v => v.ValueTypeId == value.Id).ToArrayAsync();
+
+            var model = new SensorValuesList(value, values);
+
+            return View(model);
         }
 
         [HttpGet("{id}/Add")]

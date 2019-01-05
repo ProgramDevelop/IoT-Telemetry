@@ -19,7 +19,7 @@
             <tbody>
                 @foreach (var value in Model.Values)
                 {
-                    <tr><td>@value.Name</td><td>@value.Type</td></tr>
+                    <tr><td>@Html.ActionLink(value.Name, "GetValue", "Sensor", new {id = value.SensorId, name = value.Name})</td><td>@value.Type</td></tr>
                 }
             </tbody>
         </table>

@@ -25,23 +25,23 @@ namespace Telemetry.Web.Services.SensorManager
 
         #region Sensors Implementation
 
-        public Sensor CreareSensor(Guid userId, string sensorName, string description) {
+        public Sensor CreateSensor(Guid userId, string sensorName, string description) {
 
             var sensor = new Sensor
             {
                 UserId = userId,
-                Name = sensorName.Trim().ToUpper(),
+                Name = sensorName.Trim(),
                 Description = description.Trim()
             };
 
-            var result = _sensorsRepository.CreateAsync(sensor).GetAwaiter().GetResult();
+            var result = _sensorsRepository.Create(sensor);
 
             return result ? sensor : null;
         }
 
-        public Sensor GetSensorById(Guid sensorId) => _sensorsRepository.GetByIdAsync(sensorId).GetAwaiter().GetResult();
+        public Sensor GetSensorById(Guid sensorId) => _sensorsRepository.GetById(sensorId);
 
-        public bool DeleteSensor(Guid sensorId) => _sensorsRepository.DeleteAsync(sensorId).GetAwaiter().GetResult();
+        public bool DeleteSensor(Guid sensorId) => _sensorsRepository.Delete(sensorId);
 
         public Sensor[] GetSensorsForUser(Guid id) => _sensorsRepository.GetAll().Where(s => s.UserId == id).ToArray();
 
@@ -62,7 +62,7 @@ namespace Telemetry.Web.Services.SensorManager
                 Name = name.Trim().ToUpper()
             };
 
-            var result = _valueTypesRepository.CreateAsync(value).GetAwaiter().GetResult();
+            var result = _valueTypesRepository.Create(value);
             return result ? value : null;
         }
 

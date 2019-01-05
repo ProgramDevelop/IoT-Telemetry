@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Telemetry.Database.Base
 {
@@ -8,12 +7,12 @@ namespace Telemetry.Database.Base
     {
         IQueryable<TEntity> GetAll();
 
-        Task<TEntity> GetByIdAsync(Guid id);
+        TEntity GetById(Guid id);
 
-        Task<bool> CreateAsync(TEntity entity);
+        bool Create(TEntity entity);
 
-        Task<bool> UpdateAsync(Guid id, TEntity entity);
+        bool Update(Guid id, TEntity entity);
 
-        Task<bool> DeleteAsync(Guid id);
+        bool Delete(Guid id);
     }
 }

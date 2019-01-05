@@ -8,7 +8,7 @@ namespace Telemetry.Web.Services.SensorManager
     {
         #region Sensor methods
 
-        Sensor CreareSensor(Guid userId, string sensorName, string description);
+        Sensor CreateSensor(Guid userId, string sensorName, string description);
         bool DeleteSensor(Guid sensorId);
         Sensor[] GetSensorsForUser(Guid id);
         Sensor GetSensorById(Guid id);

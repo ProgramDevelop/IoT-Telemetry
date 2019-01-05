@@ -94,7 +94,7 @@ namespace Telemetry.Web.Controllers
                 var email = User.Identity.Name;
                 var user = _userRepository.GetUserByEmail(email);
 
-                var sensor = _sensorsManager.CreareSensor(user.Id, model.Name, model.Description);
+                var sensor = _sensorsManager.CreateSensor(user.Id, model.Name, model.Description);
 
                 return RedirectToAction(nameof(Info), new { id = sensor.Id });
             }

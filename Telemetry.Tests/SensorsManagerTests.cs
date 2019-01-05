@@ -68,8 +68,6 @@ namespace Telemetry.Tests
                 Name = "Name1",
                 Description = "Desc 1",
                 UserId = Guid.Parse(USER_ONE_ID),
-                Values = GetSensorsValueTypes()
-                    .Where(v => v.SensorId == Guid.Parse(SENSOR_ONE_ID)).ToList()
             },
             new Sensor
             {
@@ -77,8 +75,6 @@ namespace Telemetry.Tests
                 Name = "Name2",
                 Description = null,
                 UserId = Guid.Parse(USER_ONE_ID),
-                Values = GetSensorsValueTypes()
-                    .Where(v => v.SensorId == Guid.Parse(SENSOR_TWO_ID)).ToList()
             },
             new Sensor
             {
@@ -86,8 +82,6 @@ namespace Telemetry.Tests
                 Name = "Name3",
                 Description = null,
                 UserId = Guid.Parse(USER_ONE_ID),
-                Values = GetSensorsValueTypes()
-                    .Where(v => v.SensorId == Guid.Parse(SENSOR_THREE_ID)).ToList()
             },
             new Sensor
             {
@@ -95,8 +89,6 @@ namespace Telemetry.Tests
                 Name = "Name4",
                 Description = "Some desc",
                 UserId = Guid.Parse(USER_TWO_ID),
-                Values = GetSensorsValueTypes()
-                    .Where(v => v.SensorId == Guid.Parse(SENSOR_FOUR_ID)).ToList()
             },
             new Sensor
             {
@@ -104,36 +96,31 @@ namespace Telemetry.Tests
                 Name = "Name5",
                 Description = null,
                 UserId = Guid.Parse(USER_TWO_ID),
-                Values = GetSensorsValueTypes()
-                    .Where(v => v.SensorId == Guid.Parse(SENSOR_FIVE_ID)).ToList()
             },
         }.AsQueryable();
 
         private IQueryable<ValueType> GetSensorsValueTypes() => new ValueType[]
         {
             new ValueType
-            {
+            {                   
                 Id = Guid.Parse("0DAC21AC-67A2-4639-9C6E-30E993C288CC"),
-                Name = "NameValueType1",
+                Name = "NAMEVALUETYPE1",
                 SensorId = Guid.Parse(SENSOR_ONE_ID),
                 Type = PayloadType.Number,
-                Values = GetValues().Where(v => v.ValueTypeId == Guid.Parse("0DAC21AC-67A2-4639-9C6E-30E993C288CC")).ToList()
             },
             new ValueType
             {
                 Id = Guid.Parse("89740433-0A86-463A-9430-9A570D145B51"),
-                Name = "NameValueType2",
+                Name = "NAMEVALUETYPE2",
                 SensorId = Guid.Parse(SENSOR_ONE_ID),
                 Type = PayloadType.Number,
-                Values = GetValues().Where(v => v.ValueTypeId == Guid.Parse("89740433-0A86-463A-9430-9A570D145B51")).ToList()
             },
             new ValueType
             {
                 Id = Guid.Parse("155C4D30-E739-4324-9D61-EFF015C5A125"),
-                Name = "NameValueType3",
+                Name = "NAMEVALUETYPE3",
                 SensorId = Guid.Parse(SENSOR_TWO_ID),
                 Type = PayloadType.Number,
-                Values = GetValues().Where(v => v.ValueTypeId == Guid.Parse("155C4D30-E739-4324-9D61-EFF015C5A125")).ToList()
             }
         }.AsQueryable();
 
@@ -164,7 +151,7 @@ namespace Telemetry.Tests
 
 
         [Fact]
-        public void ReturnSensorValueType()
+        public void ReturnSensorValueTypes()
         {
             var sensorRepo = new Mock<ISensorsRepository>();
             sensorRepo.Setup(s => s.GetAll()).Returns(GetSensors);
@@ -175,16 +162,82 @@ namespace Telemetry.Tests
             var sensorValues = new Mock<IValuesRepository>();
             sensorValues.Setup(s => s.GetAll()).Returns(GetValues);
 
-            var _sensorManager = new SensorsManager(sensorRepo.Object, sensorValueTypeRepo.Object, sensorValues.Object);
-
+            var _sensorManager = new SensorsManager(null, sensorValueTypeRepo.Object, null);
+           
             var sensorId = Guid.Parse(SENSOR_ONE_ID);
 
             var sensorValueTypes  = _sensorManager.GetValueTypes(sensorId);
 
-            var expectedSensorsValueType = GetSensorsValueTypes().Where(s => s.SensorId == sensorId);
+            var expectedSensorsValueTypes = GetSensorsValueTypes().Where(s => s.SensorId == sensorId);
 
-           Assert.Equal(expectedSensorsValueType.Count(), sensorValueTypes.Count());
+           Assert.Equal(expectedSensorsValueTypes.Count(), sensorValueTypes.Count());
            Assert.True(sensorValueTypes.All(s => s.SensorId == sensorId));
         }
+
+        [Fact]
+        public void ReturnNameValueType()
+        {
+            var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
+            
+            sensorValueTypeRepo.Setup(s => s.GetAll()).Returns(GetSensorsValueTypes);
+
+            var _sensorManager = new SensorsManager(null, sensorValueTypeRepo.Object, null);
+
+            var sensorId = Guid.Parse(SENSOR_ONE_ID);
+
+            var nameValueType = "NameValueType1";
+
+            var valueTypeId = _sensorManager.GetValueType(sensorId, nameValueType).Id;
+
+            var expectedToLowerValueTypeId = _sensorManager.GetValueType(sensorId, nameValueType.ToLower()).Id;
+            var expectedToUpperValueTypeId = _sensorManager.GetValueType(sensorId, nameValueType.ToUpper()).Id;
+
+            Assert.Equal(valueTypeId, expectedToLowerValueTypeId);
+            Assert.Equal(valueTypeId, expectedToUpperValueTypeId);
+        }
+
+        [Fact]
+        public void CreateValueType()
+        {
+            var sensorRepo = new Mock<ISensorsRepository>();
+            sensorRepo.Setup(s => s.GetAll()).Returns(GetSensors);
+
+            var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
+            sensorValueTypeRepo.Setup(s => s.Create(It.IsAny<ValueType>())).Returns(true);
+
+            var _sensorManager = new SensorsManager(sensorRepo.Object, sensorValueTypeRepo.Object, null);
+
+            var name = "  NameValueType1  ";
+            var sensorId = Guid.Parse(SENSOR_ONE_ID);
+            var type = PayloadType.Number;
+
+            var actualValueType = _sensorManager.CreateValueType(sensorId, name, type);
+
+            Assert.NotNull(actualValueType);
+            Assert.Equal(sensorId, actualValueType.SensorId);
+            Assert.Equal("NAMEVALUETYPE1", actualValueType.Name);
+            Assert.Equal(PayloadType.Number, actualValueType.Type);
+        }
+
+        [Fact]
+        public void CreateValueTypeNameEmpty()
+        {
+            var sensorRepo = new Mock<ISensorsRepository>();
+            sensorRepo.Setup(s => s.GetAll()).Returns(GetSensors);
+
+            var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
+            sensorValueTypeRepo.Setup(s => s.Create(It.IsAny<ValueType>())).Returns(true);
+
+            var _sensorManager = new SensorsManager(sensorRepo.Object, sensorValueTypeRepo.Object, null);
+
+            var name = "";
+            var sensorId = Guid.Parse(SENSOR_ONE_ID);
+            var type = PayloadType.Number;
+          
+            var actualValueType = _sensorManager.CreateValueType(sensorId, name, type);
+
+            Assert.Null(actualValueType);
+        }
+
     }
 }

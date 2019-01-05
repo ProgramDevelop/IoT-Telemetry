@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Telemetry.Database.Base;
 
 namespace Telemetry.Database.Models
 {

@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Telemetry.Database;
 using Telemetry.Database.Models;
+using Telemetry.Database.Storages;
+using Telemetry.Web.Services.SensorManager;
 using Telemetry.Web.ViewModels.Sensor;
 
 namespace Telemetry.Web.Controllers
@@ -14,45 +14,45 @@ namespace Telemetry.Web.Controllers
     [Route("[controller]")]
     public class SensorController : Controller
     {
-        private readonly TelemetryContext _db;
+        private readonly ISensorsManager _sensorsManager;
+        private readonly IUserRepository _userRepository;
 
-        public SensorController(TelemetryContext context)
+        public SensorController(ISensorsManager manager, IUserRepository userRepository)
         {
-            _db = context;
+            _sensorsManager = manager;
+            _userRepository = userRepository;
         }
 
         [HttpGet("")]
         public IActionResult Index()
         {
-            var login = User.Identity.Name;
-            var user = _db.Users.FirstOrDefault(u => u.Email == login);
-
-            var sensors = _db.Sensors.Where(s => s.UserId == user.Id).Select(s => new SensorViewModel
+            var email = User.Identity.Name;
+            var user = _userRepository.GetUserByEmail(email);
+            Sensor[] sensors = _sensorsManager.GetSensorsForUser(user.Id);
+            var sensorsViewModels = sensors.Select(s => new SensorViewModel
             {
                 Id = s.Id,
                 Name = s.Name,
                 Description = s.Description
             }).ToArray();
 
-            return View(sensors);
+            return View(sensorsViewModels);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Info(Guid id)
         {
-            var sensor = await _db.Sensors.FirstOrDefaultAsync(s => s.Id == id);
-
-            var values = await _db.ValueTypes.Where(vt => vt.SensorId == sensor.Id).ToArrayAsync();
-
+            var sensor = _sensorsManager.GetSensorById(id);
+            var values = _sensorsManager.GetValueTypes(sensor.Id);
             return View(new SensorInfoViewModel(sensor, values));
         }
 
         [HttpGet("{id}/Value/{name}")]
         public async Task<IActionResult> GetValue(Guid id, string name)
         {
-            var value = await _db.ValueTypes.FirstOrDefaultAsync(s => s.SensorId == id && s.Name == name);
+            var value = _sensorsManager.GetValueType(id, name);
+            var values = _sensorsManager.GetValues(value.Id);
 
-            var values = await _db.Values.Where(v => v.ValueTypeId == value.Id).ToArrayAsync();
 
             var model = new SensorValuesList(value, values);
 
@@ -62,8 +62,7 @@ namespace Telemetry.Web.Controllers
         [HttpGet("{id}/Add")]
         public async Task<IActionResult> AddValueType(Guid id)
         {
-            var sensor = await _db.Sensors.FirstOrDefaultAsync(s => s.Id == id);
-
+            var sensor = _sensorsManager.GetSensorById(id);
             return View(new ValueTypeViewModel { SensorId = sensor.Id });
         }
 
@@ -72,51 +71,14 @@ namespace Telemetry.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-
-                var sensor = await _db.Sensors.FirstOrDefaultAsync(s => s.Id == model.SensorId);
-
-                var value = new Database.Models.ValueType
+                if(_sensorsManager.CreateValueType(model.SensorId, model.Name, model.Type) != null)
                 {
-                    SensorId = sensor.Id,
-                    Type = model.Type,
-                    Name = model.Name
-                };
-
-                await _db.ValueTypes.AddAsync(value);
-                await _db.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Info), new { id = sensor.Id });
-
+                    return RedirectToAction(nameof(Info), new { id = model.SensorId });
+                }
             }
             return View(model);
 
         }
-
-
-        //[HttpPost("SetValue")]
-        //public async Task<IActionResult> SetSensorValue(SetSensorValueModel model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        var sensor = _db.Sensors.FirstOrDefault(r => r.Id == Guid.Parse(model.SensorId));
-        //        var sensorValue = new SensorValue
-        //        {
-        //            SensorId = Guid.Parse(model.SensorId),
-        //            Name = model.Name,
-        //            Type = model.Type,
-        //            Value = model.Value,
-        //            DateTime = DateTime.Now,
-        //            Sensor = sensor
-        //        };
-
-        //        _db.SensorValues.Add(sensorValue);
-        //        await _db.SaveChangesAsync();
-        //        return Ok();
-        //    }
-
-        //    return NotFound();
-        //}
-
 
         [HttpGet("Create")]
         public IActionResult Create()
@@ -129,18 +91,10 @@ namespace Telemetry.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var login = User.Identity.Name;
-                var user = _db.Users.FirstOrDefault(u => u.Email == login);
+                var email = User.Identity.Name;
+                var user = _userRepository.GetUserByEmail(email);
 
-                var sensor = new Sensor
-                {
-                    UserId = user.Id,
-                    Name = model.Name,
-                    Description = model.Description
-                };
-
-                _db.Sensors.Add(sensor);
-                await _db.SaveChangesAsync();
+                var sensor = _sensorsManager.CreareSensor(user.Id, model.Name, model.Description);
 
                 return RedirectToAction(nameof(Info), new { id = sensor.Id });
             }
@@ -148,29 +102,17 @@ namespace Telemetry.Web.Controllers
             return View(model);
         }
 
-        [HttpGet("Delete")]
-        public IActionResult Delete()
-        {
-            return View();
-        }
-
         [HttpGet("{id}/Delete")]
         public async Task<IActionResult> Delete(Guid id)
         {
             if (ModelState.IsValid)
             {
-                var sensor = await _db.Sensors.FirstOrDefaultAsync(s => s.Id == id);
-
-                if (sensor != null)
+                if (!_sensorsManager.DeleteSensor(id))
                 {
-                    _db.Sensors.Remove(sensor);
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Некорректные логин и(или) пароль");
+                    ModelState.AddModelError("", "Ошибка при удалении датчика");
+                    return View();
                 }
             }
-
             return RedirectToAction("Index", "Sensor");
         }
     }

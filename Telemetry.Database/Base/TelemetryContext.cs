@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Telemetry.Database.Models;
 
-namespace Telemetry.Database
+namespace Telemetry.Database.Base
 {
     public class TelemetryContext : DbContext
     {

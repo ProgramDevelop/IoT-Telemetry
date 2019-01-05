@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using Telemetry.Database;
 using Telemetry.Database.Models;
+using Telemetry.Database.Storages;
 
 namespace Telemetry.Web.Services.Auth
 {

@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Telemetry.Database;
 using Telemetry.Database.Models;
+using Telemetry.Database.Storages;
 using Telemetry.Web.Services.Auth;
 using Telemetry.Web.ViewModels.User;
 

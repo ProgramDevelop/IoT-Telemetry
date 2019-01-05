@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using Telemetry.Base;
 using Telemetry.Base.Interfaces;
+using Telemetry.Database.Base;
 
 namespace Telemetry.Database.Models
 {
-    public class Value : ISensorData
+    public class Value : ISensorData, IEntity
     {
         public Guid Id { get; set; }
 

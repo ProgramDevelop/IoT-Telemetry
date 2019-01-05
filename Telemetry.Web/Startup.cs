@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,8 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Telemetry.Database;
+using Telemetry.Database.Base;
+using Telemetry.Database.Storages;
 using Telemetry.Web.Services.Auth;
+using Telemetry.Web.Services.SensorManager;
 
 namespace Telemetry.Web
 {
@@ -44,7 +42,11 @@ namespace Telemetry.Web
               });
 
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ISensorsRepository, SensorsRepository>();
+            services.AddScoped<IValueTypesRepository, ValueTypesRepository>();
+            services.AddScoped<IValuesRepository, ValuesRepository>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ISensorsManager, SensorsManager>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

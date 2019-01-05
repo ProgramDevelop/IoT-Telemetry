@@ -39,7 +39,7 @@ namespace Telemetry.Web.Services.Auth
             password = password.Trim();
             var hash = GetHash(password);
             var user = new User { Email = login, Password = hash };
-            return _userRepository.CreateAsync(user).GetAwaiter().GetResult();
+            return _userRepository.Create(user);
         }
 
         private string GetHash(string text)

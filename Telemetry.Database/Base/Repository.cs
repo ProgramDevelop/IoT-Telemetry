@@ -19,18 +19,18 @@ namespace Telemetry.Database.Base
             return _context.Set<TEntity>().AsNoTracking();
         }
 
-        public async Task<TEntity> GetByIdAsync(Guid id)
+        public TEntity GetById(Guid id)
         {
-            var entity = await _context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+            var entity = _context.Set<TEntity>().AsNoTracking().FirstOrDefault(e => e.Id == id);
             return entity;
         }
 
-        public async Task<bool> CreateAsync(TEntity entity)
+        public bool Create(TEntity entity)
         {
             try
             {
-                await _context.Set<TEntity>().AddAsync(entity);
-                await _context.SaveChangesAsync();
+                _context.Set<TEntity>().Add(entity);
+                _context.SaveChanges();
             }
             catch (DbUpdateException)
             {
@@ -39,15 +39,15 @@ namespace Telemetry.Database.Base
             return true;
         }
 
-        public async Task<bool> DeleteAsync(Guid id)
+        public bool Delete(Guid id)
         {
-            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+            var user = _context.Users.AsNoTracking().FirstOrDefault(u => u.Id == id);
             if (user == null)
                 return false;
             try
             {
                 _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
             catch (DbUpdateException)
             {
@@ -56,12 +56,12 @@ namespace Telemetry.Database.Base
             return true;
         }
 
-        public async Task<bool> UpdateAsync(Guid id, TEntity entity)
+        public bool Update(Guid id, TEntity entity)
         {
             try
             {
                 _context.Set<TEntity>().Update(entity);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
             catch (DbUpdateException)
             {

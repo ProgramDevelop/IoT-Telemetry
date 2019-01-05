@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Telemetry.Database
+namespace Telemetry.Database.Base
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity
     {

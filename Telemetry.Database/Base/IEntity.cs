@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Telemetry.Database
+namespace Telemetry.Database.Base
 {
     public interface IEntity
     {

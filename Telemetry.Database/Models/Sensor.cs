@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Telemetry.Database.Base;
 
 namespace Telemetry.Database.Models
 {
-    public class Sensor
+    public class Sensor : IEntity
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }

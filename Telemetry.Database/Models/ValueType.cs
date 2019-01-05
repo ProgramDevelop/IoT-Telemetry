@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using Telemetry.Base;
 using Telemetry.Base.Interfaces;
+using Telemetry.Database.Base;
 
 namespace Telemetry.Database.Models
 {  
-    public class ValueType : IValueType
+    public class ValueType : IValueType, IEntity
     {
         public Guid Id { get; set; }
 

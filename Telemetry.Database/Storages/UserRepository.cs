@@ -1,7 +1,8 @@
 ﻿using System.Linq;
+using Telemetry.Database.Base;
 using Telemetry.Database.Models;
 
-namespace Telemetry.Database
+namespace Telemetry.Database.Storages
 {
     public class UserRepository : Repository<User>, IUserRepository
     {

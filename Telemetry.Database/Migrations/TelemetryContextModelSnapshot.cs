@@ -2,8 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Telemetry.Database;
+using Telemetry.Database.Base;
 
 namespace Telemetry.Database.Migrations
 {

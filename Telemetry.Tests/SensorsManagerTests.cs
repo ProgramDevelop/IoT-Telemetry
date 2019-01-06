@@ -153,18 +153,13 @@ namespace Telemetry.Tests
         [Fact]
         public void ReturnSensorValueTypes()
         {
-            var sensorRepo = new Mock<ISensorsRepository>();
-            sensorRepo.Setup(s => s.GetAll()).Returns(GetSensors);
+            var sensorId = Guid.Parse(SENSOR_ONE_ID);
 
             var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
-            sensorValueTypeRepo.Setup(s => s.GetAll()).Returns(GetSensorsValueTypes);
-
-            var sensorValues = new Mock<IValuesRepository>();
-            sensorValues.Setup(s => s.GetAll()).Returns(GetValues);
+            sensorValueTypeRepo.Setup(s => s.GetValueTypesForSensor(sensorId))
+                .Returns(GetSensorsValueTypes().Where(s => s.SensorId == sensorId).ToArray);
 
             var _sensorManager = new SensorsManager(null, sensorValueTypeRepo.Object, null);
-           
-            var sensorId = Guid.Parse(SENSOR_ONE_ID);
 
             var sensorValueTypes  = _sensorManager.GetValueTypes(sensorId);
 
@@ -174,18 +169,19 @@ namespace Telemetry.Tests
            Assert.True(sensorValueTypes.All(s => s.SensorId == sensorId));
         }
 
-        [Fact]
-        public void ReturnNameValueType()
+        [Theory]
+        [InlineData(SENSOR_ONE_ID, "NameValueType1")]
+        [InlineData(SENSOR_ONE_ID, "namevaluetype1")]
+        [InlineData(SENSOR_ONE_ID, "  NameValueType1  ")]
+        public void ReturnNameValueType(string id, string nameValueType)
         {
+            var sensorId = Guid.Parse(id);
+
             var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
             
             sensorValueTypeRepo.Setup(s => s.GetAll()).Returns(GetSensorsValueTypes);
 
             var _sensorManager = new SensorsManager(null, sensorValueTypeRepo.Object, null);
-
-            var sensorId = Guid.Parse(SENSOR_ONE_ID);
-
-            var nameValueType = "NameValueType1";
 
             var valueTypeId = _sensorManager.GetValueType(sensorId, nameValueType).Id;
 
@@ -196,20 +192,19 @@ namespace Telemetry.Tests
             Assert.Equal(valueTypeId, expectedToUpperValueTypeId);
         }
 
-        [Fact]
-        public void CreateValueType()
+        [Theory]
+        [InlineData(SENSOR_ONE_ID, "  NameValueType1  ", PayloadType.Number)]
+        public void CreateValueType(string id, string name, PayloadType type)
         {
+            var sensorId = Guid.Parse(id);
+
             var sensorRepo = new Mock<ISensorsRepository>();
-            sensorRepo.Setup(s => s.GetAll()).Returns(GetSensors);
+            sensorRepo.Setup(s => s.GetById(sensorId)).Returns(GetSensors().FirstOrDefault(s => s.Id == sensorId));
 
             var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
             sensorValueTypeRepo.Setup(s => s.Create(It.IsAny<ValueType>())).Returns(true);
 
             var _sensorManager = new SensorsManager(sensorRepo.Object, sensorValueTypeRepo.Object, null);
-
-            var name = "  NameValueType1  ";
-            var sensorId = Guid.Parse(SENSOR_ONE_ID);
-            var type = PayloadType.Number;
 
             var actualValueType = _sensorManager.CreateValueType(sensorId, name, type);
 
@@ -219,21 +214,20 @@ namespace Telemetry.Tests
             Assert.Equal(PayloadType.Number, actualValueType.Type);
         }
 
-        [Fact]
-        public void CreateValueTypeNameEmpty()
+        [Theory]
+        [InlineData(SENSOR_ONE_ID, " ", PayloadType.Number)]
+        public void CreateValueTypeNotNameEmpty(string id, string name, PayloadType type)
         {
+            var sensorId = Guid.Parse(id);
+
             var sensorRepo = new Mock<ISensorsRepository>();
-            sensorRepo.Setup(s => s.GetAll()).Returns(GetSensors);
+            sensorRepo.Setup(s => s.GetById(sensorId)).Returns(GetSensors().FirstOrDefault(s => s.Id == sensorId));
 
             var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
             sensorValueTypeRepo.Setup(s => s.Create(It.IsAny<ValueType>())).Returns(true);
 
             var _sensorManager = new SensorsManager(sensorRepo.Object, sensorValueTypeRepo.Object, null);
 
-            var name = "";
-            var sensorId = Guid.Parse(SENSOR_ONE_ID);
-            var type = PayloadType.Number;
-          
             var actualValueType = _sensorManager.CreateValueType(sensorId, name, type);
 
             Assert.Null(actualValueType);

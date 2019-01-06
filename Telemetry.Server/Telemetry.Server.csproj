@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Telemetry.Base\Telemetry.Base.csproj" />
+    <ProjectReference Include="..\Telemetry.Receivers\Telemetry.Receivers.csproj" />
   </ItemGroup>
 
 </Project>

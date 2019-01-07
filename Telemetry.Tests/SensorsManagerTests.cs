@@ -282,5 +282,22 @@ namespace Telemetry.Tests
             Assert.Null(actualValueType);
         }
 
+        [Theory]
+        [InlineData(SENSOR_ONE_ID)]
+        [InlineData(SENSOR_THREE_ID)]
+        public void DeleteSensor(string id)
+        {
+            var sensorId = Guid.Parse(id);
+
+            var sensorRepo = new Mock<ISensorsRepository>();
+             sensorRepo.Setup(s => s.Delete(sensorId)).Returns(true);
+           
+            var _sensorManager = new SensorsManager(sensorRepo.Object, null, null);
+
+            var result = _sensorManager.DeleteSensor(sensorId);
+
+            Assert.True(result);
+        }
+
     }
 }

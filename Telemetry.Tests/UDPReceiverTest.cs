@@ -11,6 +11,8 @@ using Telemetry.Base;
 using Telemetry.Receivers;
 using System.Net.Sockets;
 using Telemetry.Base.Interfaces;
+using System.Threading.Tasks;
+using System.Net;
 
 namespace Telemetry.Tests
 {
@@ -19,11 +21,20 @@ namespace Telemetry.Tests
         [Fact]
         public void ReturnIsEventCalled()
         {
-            UDPReceiver udpRec = new UDPReceiver();
-
+            IReceiver udpRec = new UDPReceiver();
             var wait = new System.Threading.AutoResetEvent(false);
             udpRec.OnMessageReceive += (MessageEventArgs) => { wait.Set(); };
-            Assert.False(wait.WaitOne(TimeSpan.FromSeconds(5)));
+            udpRec.Start();
+
+            IPAddress ipaddress = IPAddress.Parse("127.0.0.1");
+            IPEndPoint ipendpoint = new IPEndPoint(ipaddress, 2000);
+            var udp = new UdpClient(2001);
+            var id = new Guid("0DAC21AC-67A2-4639-9C6E-30E993C288CC");
+            string msg = id.ToString() + "_test_000";
+            byte[] bytesArr = Encoding.ASCII.GetBytes(msg);
+            udp.Send(bytesArr, bytesArr.Length, ipendpoint);
+
+            Assert.True(wait.WaitOne(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]

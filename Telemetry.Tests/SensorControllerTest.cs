@@ -152,5 +152,28 @@ namespace Telemetry.Tests
             Assert.Equal(expectedSensorInfo.Values.Count(), model.Values.Count());
         }
 
+        [Theory]
+        [InlineData(SENSOR_ONE_ID)]
+        public void ReturnAddValueType(string id)
+        {
+            var sensorId = Guid.Parse(id);
+
+            var sensorRepo = new Mock<ISensorsRepository>();
+            sensorRepo.Setup(s => s.GetById(sensorId)).Returns(GetSensors().FirstOrDefault(s => s.Id == sensorId));
+
+            var _sensorsManager = new SensorsManager(sensorRepo.Object, null, null);
+
+            var sensorController = new SensorController(_sensorsManager, null);
+
+            var result = sensorController.AddValueType(sensorId).Result;
+
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ValueTypeViewModel>(viewResult.ViewData.Model);
+
+            Assert.Null(model.Name);
+            Assert.Equal(Guid.Empty, model.Id);
+            Assert.Equal(sensorId,model.SensorId);
+            Assert.Equal(PayloadType.String,model.Type);
+        }
     }
 }

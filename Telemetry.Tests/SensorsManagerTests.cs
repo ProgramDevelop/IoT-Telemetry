@@ -207,19 +207,42 @@ namespace Telemetry.Tests
 
             var _sensorManager = new SensorsManager(sensorRepo.Object, sensorValueTypeRepo.Object, null);
 
-            var valueTypeId = _sensorManager.GetValueType(sensorId, nameValueType).SensorId;
-
             var expectedValueTypeId = GetSensorsValueTypes()
                 .FirstOrDefault(r => r.SensorId == sensorId && r.Name == nameValueType.ToUpper())?.SensorId;
 
             var sesnorValueTypeId = _sensorManager.GetSensorById(sensorId).Id;
 
-            Assert.Equal(expectedValueTypeId, valueTypeId);
-            Assert.Equal(valueTypeId, sesnorValueTypeId);
+            Assert.Equal(expectedValueTypeId, sensorId);
+            Assert.Equal(sesnorValueTypeId, sensorId);
+        }
+
+        [Theory]
+        [InlineData(SENSOR_ONE_ID, "NameValueType1")]
+        [InlineData(SENSOR_ONE_ID, "NameValueType2")]
+        public void ReturnValues(string id, string nameValueType)
+        {
+            var sensorId = Guid.Parse(id);
+
+            var valueType = GetSensorsValueTypes()
+                .FirstOrDefault(r => r.SensorId == sensorId && r.Name == nameValueType.ToUpper());
+
+            Assert.NotNull(valueType);
+
+            var sensorValuesRepo = new Mock<IValuesRepository>();
+            sensorValuesRepo.Setup(s => s.GetValues(valueType.Id)).Returns(GetValues().Where(v => v.ValueTypeId == valueType.Id).ToArray);
+
+            var _sensorManager = new SensorsManager(null, null, sensorValuesRepo.Object);
+
+            var values = _sensorManager.GetValues(valueType.Id);
+
+            var expectedValues = GetValues().Where(v => v.ValueTypeId == valueType.Id);
+
+            Assert.Equal(expectedValues.Count(), values.Count());
         }
 
         [Theory]
         [InlineData(SENSOR_ONE_ID, "  NameValueType1  ", PayloadType.Number)]
+        [InlineData(SENSOR_ONE_ID, "NameValueType1", PayloadType.String)]
         public void CreateValueType(string id, string name, PayloadType type)
         {
             var sensorId = Guid.Parse(id);
@@ -237,7 +260,7 @@ namespace Telemetry.Tests
             Assert.NotNull(actualValueType);
             Assert.Equal(sensorId, actualValueType.SensorId);
             Assert.Equal("NAMEVALUETYPE1", actualValueType.Name);
-            Assert.Equal(PayloadType.Number, actualValueType.Type);
+            Assert.Equal(type, actualValueType.Type);
         }
 
         [Theory]

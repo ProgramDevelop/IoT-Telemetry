@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Telemetry.Receivers\Telemetry.Receivers.csproj" />
     <ProjectReference Include="..\Telemetry.Web\Telemetry.Web.csproj" />
   </ItemGroup>
 

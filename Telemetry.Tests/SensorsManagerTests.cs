@@ -193,6 +193,32 @@ namespace Telemetry.Tests
         }
 
         [Theory]
+        [InlineData(SENSOR_ONE_ID, "NameValueType1")]
+        [InlineData(SENSOR_TWO_ID, "NAMEVALUETYPE3")]
+        public void ReturnValueType(string id, string nameValueType)
+        {
+            var sensorId = Guid.Parse(id);
+
+            var sensorRepo = new Mock<ISensorsRepository>();
+            sensorRepo.Setup(s => s.GetById(sensorId)).Returns(GetSensors().FirstOrDefault(s => s.Id == sensorId));
+
+            var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
+            sensorValueTypeRepo.Setup(s => s.GetAll()).Returns(GetSensorsValueTypes);
+
+            var _sensorManager = new SensorsManager(sensorRepo.Object, sensorValueTypeRepo.Object, null);
+
+            var valueTypeId = _sensorManager.GetValueType(sensorId, nameValueType).SensorId;
+
+            var expectedValueTypeId = GetSensorsValueTypes()
+                .FirstOrDefault(r => r.SensorId == sensorId && r.Name == nameValueType.ToUpper())?.SensorId;
+
+            var sesnorValueTypeId = _sensorManager.GetSensorById(sensorId).Id;
+
+            Assert.Equal(expectedValueTypeId, valueTypeId);
+            Assert.Equal(valueTypeId, sesnorValueTypeId);
+        }
+
+        [Theory]
         [InlineData(SENSOR_ONE_ID, "  NameValueType1  ", PayloadType.Number)]
         public void CreateValueType(string id, string name, PayloadType type)
         {

@@ -33,9 +33,11 @@ namespace Telemetry.Web.Services.Auth
 
         public bool Register(string login, string password)
         {
+            login = login.Trim().ToUpper();
+
             if (IsUserExist(login))
                 return false;
-            login = login.Trim().ToUpper();
+
             password = password.Trim();
             var hash = GetHash(password);
             var user = new User { Email = login, Password = hash };

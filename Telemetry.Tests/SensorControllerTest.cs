@@ -175,5 +175,41 @@ namespace Telemetry.Tests
             Assert.Equal(sensorId,model.SensorId);
             Assert.Equal(PayloadType.String,model.Type);
         }
+
+        public static IEnumerable<object[]> ValueTypeViewModelData() => new List<object[]>
+        {
+            new object[]
+            {
+              new ValueTypeViewModel
+              {
+                  Id = Guid.Parse("0DAC21AC-67A2-4639-9C6E-30E993C288CC"),
+                  SensorId = Guid.Parse(SENSOR_ONE_ID),
+                  Name = "NameValueType",
+                  Type = PayloadType.String
+              } 
+            }
+        };
+
+        [Theory]
+        [MemberData(nameof(ValueTypeViewModelData))]
+        public void ReturnAddValueTypeModel(ValueTypeViewModel model)
+        {
+            var sensorRepo = new Mock<ISensorsRepository>();
+            sensorRepo.Setup(s => s.GetById(model.SensorId)).Returns(GetSensors().FirstOrDefault(s => s.Id == model.SensorId));
+
+            var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
+            sensorValueTypeRepo.Setup(s => s.Create(It.IsAny<ValueType>())).Returns(true);
+
+            var _sensorsManager = new SensorsManager(sensorRepo.Object, sensorValueTypeRepo.Object, null);
+
+            var sensorController = new SensorController(_sensorsManager, null);
+
+            var result = sensorController.AddValueType(model).Result;
+
+            var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
+
+            Assert.Equal("Info", redirectToActionResult.ActionName);
+
+        }
     }
 }

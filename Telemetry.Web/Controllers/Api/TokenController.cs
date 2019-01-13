@@ -1,10 +1,6 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Mvc;
 using Telemetry.Web.Services.Auth;
+using Telemetry.Web.Services.Jwt;
 using Telemetry.Web.ViewModels.User;
 
 namespace Telemetry.Web.Controllers.Api
@@ -14,39 +10,24 @@ namespace Telemetry.Web.Controllers.Api
     public class TokenController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IJwtFactory _jwtFactory;
 
-        public TokenController(IAuthService authService)
+        public TokenController(IAuthService authService, IJwtFactory jwtFactory)
         {
             _authService = authService;
+            _jwtFactory = jwtFactory;
         }
 
         [HttpPost]
         [Route("create")]
-        public IActionResult Create(LoginModel model)
+        public ActionResult<string> Create(LoginModel model)
         {
             if (_authService.CheckCredentials(model.Email, model.Password))
             {
-                return new ObjectResult(GenerateToken(model.Email));
+                var token = _jwtFactory.GenerateToken(model.Email);
+                return token;
             }
             return BadRequest();
-        }
-
-        private string GenerateToken(string email)
-        {
-            var claims = new Claim[]
-            {
-                new Claim(ClaimTypes.Name, email),
-                new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds().ToString()),
-                new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(DateTime.Now.AddDays(1)).ToUnixTimeSeconds().ToString()),
-            };
-
-            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("thisisasecreteforauth"));
-            var signingCredential = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-            var jwtHeader = new JwtHeader(signingCredential);
-            var jwtPayload = new JwtPayload(claims);
-            var token = new JwtSecurityToken(jwtHeader, jwtPayload);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

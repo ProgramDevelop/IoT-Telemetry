@@ -12,6 +12,7 @@ using System.Text;
 using Telemetry.Database.Base;
 using Telemetry.Database.Storages;
 using Telemetry.Web.Services.Auth;
+using Telemetry.Web.Services.Jwt;
 using Telemetry.Web.Services.SensorManager;
 
 namespace Telemetry.Web
@@ -38,6 +39,22 @@ namespace Telemetry.Web
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<TelemetryContext>(options => options.UseSqlite(connection));
 
+            var secretKey = Configuration["SecretKey"];
+            var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
+
+            #region Auth configuration
+
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey));
+
+            services.Configure<JwtIssuerOptions>(options =>
+            {
+                options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
+                options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
+                options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+            });
+
+            #endregion
+
             services.AddAuthentication(authOptions =>
             {
                 authOptions.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -50,16 +67,20 @@ namespace Telemetry.Web
             })
             .AddJwtBearer(options =>
             {
+                options.ClaimsIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateAudience = false,
                     ValidateIssuer = false,
+                    ValidateAudience = false,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("thisisasecreteforauth")),
+                    IssuerSigningKey = signingKey,
+                    RequireExpirationTime = false,
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.FromMinutes(5)
+                    ClockSkew = TimeSpan.Zero,
                 };
             });
+
+            services.AddSingleton<IJwtFactory, JwtFactory>();
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISensorsRepository, SensorsRepository>();

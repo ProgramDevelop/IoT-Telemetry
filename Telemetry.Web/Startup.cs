@@ -6,9 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
 using Telemetry.Database.Base;
 using Telemetry.Database.Storages;
 using Telemetry.Web.Services.Auth;
+using Telemetry.Web.Services.Jwt;
 using Telemetry.Web.Services.SensorManager;
 
 namespace Telemetry.Web
@@ -35,11 +39,48 @@ namespace Telemetry.Web
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<TelemetryContext>(options => options.UseSqlite(connection));
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-              .AddCookie(options =>
-              {
-                  options.LoginPath = new PathString("/User/Login");
-              });
+            var secretKey = Configuration["SecretKey"];
+            var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
+
+            #region Auth configuration
+
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey));
+
+            services.Configure<JwtIssuerOptions>(options =>
+            {
+                options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
+                options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
+                options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+            });
+
+            #endregion
+
+            services.AddAuthentication(authOptions =>
+            {
+                authOptions.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                authOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                authOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(options =>
+            {
+                options.LoginPath = new PathString("/User/Login");
+            })
+            .AddJwtBearer(options =>
+            {
+                options.ClaimsIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = signingKey,
+                    RequireExpirationTime = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
+                };
+            });
+
+            services.AddSingleton<IJwtFactory, JwtFactory>();
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISensorsRepository, SensorsRepository>();

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Telemetry.Database.Base
 {
-    public interface IRepository<TEntity> where TEntity: class, IEntity
+    public interface IRepository<TEntity> where TEntity: class, IEntity, new()
     {
         IQueryable<TEntity> GetAll();
 

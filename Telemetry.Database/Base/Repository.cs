@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Telemetry.Database.Base
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity
+    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity, new()
     {
         private readonly TelemetryContext _context;
 

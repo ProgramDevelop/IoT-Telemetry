@@ -1,5 +1,6 @@
 ﻿using System;
 using Telemetry.Base;
+using Telemetry.Base.Interfaces;
 using Telemetry.Database.Models;
 
 namespace Telemetry.Web.Services.SensorManager
@@ -26,6 +27,8 @@ namespace Telemetry.Web.Services.SensorManager
         #region Values methods
 
         Value[] GetValues(Guid valueTypeId);
+
+        bool StoreValue(Guid id, ISensorData payload);
 
         #endregion
     }

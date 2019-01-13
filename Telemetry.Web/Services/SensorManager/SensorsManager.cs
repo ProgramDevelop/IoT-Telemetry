@@ -52,6 +52,10 @@ namespace Telemetry.Web.Services.SensorManager
 
         public Database.Models.ValueType CreateValueType(Guid sensorId, string name, PayloadType type)
         {
+            name = name?.Trim();
+            if (string.IsNullOrEmpty(name))
+                return null;
+
             var sensor = GetSensorById(sensorId);
             if (sensor == null)
                 return null;

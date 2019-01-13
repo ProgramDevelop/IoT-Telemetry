@@ -1,15 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Routing;
 using Moq;
 using Telemetry.Base;
 using Telemetry.Database.Models;
@@ -216,7 +208,7 @@ namespace Telemetry.Tests
         [Theory]
         [InlineData(SENSOR_ONE_ID)]
         [InlineData(SENSOR_TWO_ID)]
-        public void ReturnDeleteModel(string id)
+        public void ReturnDeleteSensorModel(string id)
         {
             var sensorId = Guid.Parse(id);
 

@@ -211,5 +211,28 @@ namespace Telemetry.Tests
             Assert.Equal("Info", redirectToActionResult.ActionName);
 
         }
+
+
+        [Theory]
+        [InlineData(SENSOR_ONE_ID)]
+        [InlineData(SENSOR_TWO_ID)]
+        public void ReturnDeleteModel(string id)
+        {
+            var sensorId = Guid.Parse(id);
+
+            var sensorRepo = new Mock<ISensorsRepository>();
+            sensorRepo.Setup(s => s.Delete(sensorId)).Returns(true);
+
+            var _sensorManager = new SensorsManager(sensorRepo.Object, null, null);
+
+            var sensorController = new SensorController(_sensorManager, null);
+
+            var result = sensorController.Delete(sensorId).Result;
+
+            var redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
+
+            Assert.Equal("Index", redirectToActionResult.ActionName);
+            Assert.Equal("Sensor", redirectToActionResult.ControllerName);
+        }
     }
 }

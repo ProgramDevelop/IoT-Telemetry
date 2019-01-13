@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
 using Telemetry.Database.Base;
 using Telemetry.Database.Storages;
 using Telemetry.Web.Services.Auth;
@@ -35,11 +38,28 @@ namespace Telemetry.Web
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<TelemetryContext>(options => options.UseSqlite(connection));
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-              .AddCookie(options =>
-              {
-                  options.LoginPath = new PathString("/User/Login");
-              });
+            services.AddAuthentication(authOptions =>
+            {
+                authOptions.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                authOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                authOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(options =>
+            {
+                options.LoginPath = new PathString("/User/Login");
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("thisisasecreteforauth")),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(5)
+                };
+            });
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISensorsRepository, SensorsRepository>();

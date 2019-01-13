@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Telemetry.Base;
 using Telemetry.Base.Interfaces;
 using Telemetry.Database.Base;
 
@@ -9,6 +6,16 @@ namespace Telemetry.Database.Models
 {
     public class Value : ISensorData, IEntity
     {
+        public Value() { }
+
+        public Value(Guid valueTypeId, ISensorData payload)
+        {
+            ValueTypeId = valueTypeId;
+            DateTime = payload.DateTime;
+            Data = payload.Data;
+        }
+
+
         public Guid Id { get; set; }
 
         public ValueType ValueType { get; set; }

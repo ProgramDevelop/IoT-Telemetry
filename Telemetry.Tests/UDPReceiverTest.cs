@@ -1,17 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
-using Telemetry.Web.Services.SensorManager;
 using Xunit;
-using Moq;
-using Telemetry.Database.Storages;
-using Telemetry.Database.Models;
-using System.Linq;
-using Telemetry.Base;
 using Telemetry.Receivers;
 using System.Net.Sockets;
 using Telemetry.Base.Interfaces;
-using System.Threading.Tasks;
 using System.Net;
 
 namespace Telemetry.Tests
@@ -21,13 +13,13 @@ namespace Telemetry.Tests
         [Fact]
         public void ReturnIsEventCalled()
         {
-            IReceiver udpRec = new UDPReceiver();
-            var wait = new System.Threading.AutoResetEvent(false);
+            IReceiver udpRec = new UDPReceiver("UDP", "", 2020);
+            var wait = new System.Threading.AutoResetEvent(true);
             udpRec.OnMessageReceive += (MessageEventArgs) => { wait.Set(); };
             udpRec.Start();
 
-            IPAddress ipaddress = IPAddress.Parse("127.0.0.1");
-            IPEndPoint ipendpoint = new IPEndPoint(ipaddress, 2000);
+            var ipaddress = IPAddress.Parse("127.0.0.1");
+            var ipendpoint = new IPEndPoint(ipaddress, 2020);
             var udp = new UdpClient(2001);
             var id = new Guid("0DAC21AC-67A2-4639-9C6E-30E993C288CC");
             string msg = id.ToString() + "_test_000";
@@ -40,7 +32,7 @@ namespace Telemetry.Tests
         [Fact]
         public void ReturnObjectCreated()
         {
-            UDPReceiver udpRec = new UDPReceiver("rec0", "test", 2000);
+            var udpRec = new UDPReceiver("rec0", "test", 2000);
 
             Assert.NotNull(udpRec);
             Assert.Equal("rec0", udpRec.Name);

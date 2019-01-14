@@ -81,11 +81,11 @@ namespace Telemetry.Tests
             }
         }.AsQueryable();
 
-        [Theory]
-        [InlineData(SENSOR_ONE_ID, "NAMEVALUETYPE1")]
-        public void ReturnGetValueModel(string id, string nameValueType)
+        [Fact]
+        public void ReturnGetValueModel()
         {
-            var sensorId = Guid.Parse(id);
+            var sensorId = Guid.Parse(SENSOR_ONE_ID);
+            var nameValueType = "NAMEVALUETYPE1";
             var sensorValueTypeRepo = new Mock<IValueTypesRepository>();
             sensorValueTypeRepo.Setup(s => s.GetAll()).Returns(GetSensorsValueTypes);
 
@@ -115,6 +115,7 @@ namespace Telemetry.Tests
 
         [Theory]
         [InlineData(SENSOR_ONE_ID)]
+        [InlineData(SENSOR_TWO_ID)]
         public void ReturnInfoModel(string id)
         {
             var sensorId = Guid.Parse(id);
@@ -146,6 +147,7 @@ namespace Telemetry.Tests
 
         [Theory]
         [InlineData(SENSOR_ONE_ID)]
+        [InlineData(SENSOR_TWO_ID)]
         public void ReturnAddValueType(string id)
         {
             var sensorId = Guid.Parse(id);
@@ -176,9 +178,19 @@ namespace Telemetry.Tests
               {
                   Id = Guid.Parse("0DAC21AC-67A2-4639-9C6E-30E993C288CC"),
                   SensorId = Guid.Parse(SENSOR_ONE_ID),
-                  Name = "NameValueType",
+                  Name = "NameValueType1",
                   Type = PayloadType.String
-              } 
+              }
+            },
+            new object[]
+            {
+                new ValueTypeViewModel
+                {
+                    Id = Guid.Parse("89740433-0A86-463A-9430-9A570D145B51"),
+                    SensorId = Guid.Parse(SENSOR_ONE_ID),
+                    Name = "NameValueType1",
+                    Type = PayloadType.String
+                }
             }
         };
 

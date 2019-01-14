@@ -299,5 +299,23 @@ namespace Telemetry.Tests
             Assert.True(result);
         }
 
+        [Fact]
+        public void ReturnStoreValue()
+        {
+            var sensorValueRepo = new Mock<IValuesRepository>();
+            sensorValueRepo.Setup(s => s.Create(It.IsAny<Value>())).Returns(true);
+
+            var _sensorManager = new SensorsManager(null, null, sensorValueRepo.Object);
+
+            var apiPlaylod = new ApiPayload
+            {
+                DateTime = DateTime.Now,
+                Data = DateTime.Today.ToString()
+            };
+
+            var result =  _sensorManager.StoreValue(Guid.Parse("89740433-0A86-463A-9430-9A570D145B51"), apiPlaylod);
+            Assert.True(result);
+        }
+
     }
 }

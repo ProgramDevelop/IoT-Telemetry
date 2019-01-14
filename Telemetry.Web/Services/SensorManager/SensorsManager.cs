@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Telemetry.Base;
+using Telemetry.Base.Interfaces;
 using Telemetry.Database.Models;
 using Telemetry.Database.Storages;
 
@@ -51,6 +52,10 @@ namespace Telemetry.Web.Services.SensorManager
 
         public Database.Models.ValueType CreateValueType(Guid sensorId, string name, PayloadType type)
         {
+            name = name?.Trim();
+            if (string.IsNullOrEmpty(name))
+                return null;
+
             var sensor = GetSensorById(sensorId);
             if (sensor == null)
                 return null;
@@ -78,6 +83,12 @@ namespace Telemetry.Web.Services.SensorManager
 
         public Value[] GetValues(Guid valueTypeId) =>
             _valuesRepository.GetValues(valueTypeId);
+
+        public bool StoreValue(Guid valueTypeId, ISensorData payload)
+        {
+            var value = new Value(valueTypeId, payload);
+            return _valuesRepository.Create(value);
+        }
 
         #endregion
     }

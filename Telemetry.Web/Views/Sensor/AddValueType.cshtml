@@ -7,23 +7,25 @@
 
 <form asp-action="AddValueType" asp-controller="Sensor" asp-all-route-data="data">
     <div class="validation" asp-validation-summary="ModelOnly" />
-    <div>
-        <input asp-for="SensorId" type="hidden" />
-        <div>
-            <label asp-for="Name">Название</label><br />
-            <input type="text" asp-for="Name" />
-            <span asp-validation-for="Name" />
-        </div>
-        <div>
-            <label asp-for="Type" >Тип значения</label>
-            <select asp-for="Type">
-                <option value="@Telemetry.Base.PayloadType.String">Текстовое значение</option>
-                <option value="@Telemetry.Base.PayloadType.Number">Числовое</option>
-            </select>
-            <span asp-validation-for="Type" />
-        </div>
-        <div>
-            <input type="submit" value="Создать" />
+    <div class="row">
+        <div class="col-md-6">
+            <input asp-for="SensorId" type="hidden" />
+            <div class="form-group">
+                <label asp-for="Name">Название</label><br />
+                <input class="form-control" type="text" asp-for="Name" />
+                <span asp-validation-for="Name" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Type">Тип значения</label>
+                <select class="form-control" asp-for="Type">
+                    <option value="@Telemetry.Base.PayloadType.String">Текстовое значение</option>
+                    <option value="@Telemetry.Base.PayloadType.Number">Числовое</option>
+                </select>
+                <span asp-validation-for="Type" />
+            </div>
+            <div>
+                <button class="btn btn-primary" type="submit">Создать</button>
+            </div>
         </div>
     </div>
 </form>

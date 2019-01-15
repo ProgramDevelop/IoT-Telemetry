@@ -4,8 +4,8 @@
 }
 
 @if (Model.ValueType == Telemetry.Base.PayloadType.Number)
-{
-    var values = Model.Values.Select(v => new Telemetry.Web.ViewModels.Shared.ChartValue { Value = double.Parse(v.Data), Name = v.Data }).ToArray();
+    {
+        var values = Model.Values.Select(v => new Telemetry.Web.ViewModels.Shared.ChartValue { Value = double.Parse(v.Data), Name = v.DateTime.ToString() }).ToArray();
     await Html.RenderPartialAsync("LineChart", values);
 }
 

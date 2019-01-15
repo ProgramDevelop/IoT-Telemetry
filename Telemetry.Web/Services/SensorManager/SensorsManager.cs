@@ -28,11 +28,15 @@ namespace Telemetry.Web.Services.SensorManager
 
         public Sensor CreateSensor(Guid userId, string sensorName, string description) {
 
+            sensorName = sensorName?.Trim();
+            if (string.IsNullOrEmpty(sensorName))
+                return null;
+
             var sensor = new Sensor
             {
                 UserId = userId,
                 Name = sensorName.Trim(),
-                Description = description.Trim()
+                Description = description?.Trim()
             };
 
             var result = _sensorsRepository.Create(sensor);

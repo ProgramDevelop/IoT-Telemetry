@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Loader;
 using System.Text;
+using System.Threading.Tasks;
 using Telemetry.Base.Interfaces;
 
 namespace Telemetry.Server
@@ -13,19 +15,56 @@ namespace Telemetry.Server
     class ServerManager
     {
         private readonly List<IReceiver> _receivers;
-        private string _uri;
-        private readonly string _apiKey;
+        private readonly string _uri;
+        private string _apiKey;
 
-        public ServerManager(string apiUri, string apiKey)
+        public event Action<object, MessageEventArgs> OnMessageReceived;
+
+        public ServerManager(string apiUri)
         {
             _uri = apiUri;
-            _apiKey = apiKey;
             _receivers = new List<IReceiver>();
+        }
+
+        public async Task<bool> Authentificate(string login, string password)
+        {
+            var bodyJson = new JObject();
+            bodyJson.Add("email", login);
+            bodyJson.Add("password", password);
+
+            string body = bodyJson.ToString();
+
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(_uri);
+                var request = new HttpRequestMessage(HttpMethod.Post, $"/api/Token/Create")
+                {
+                    Content = new StringContent(body, Encoding.UTF8, "application/json"),
+                };
+
+                HttpResponseMessage response = null;
+                try
+                {
+                    response = await client.SendAsync(request);
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var responseStr = await response.Content.ReadAsStringAsync();
+                    _apiKey = responseStr;
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void Load(string directory)
         {
-            var files = Directory.GetFiles(directory, "*.dll");
+            var fullDirectory = Path.GetFullPath(directory);
+            var files = Directory.GetFiles(fullDirectory, "*.dll");
 
             foreach (var file in files)
             {
@@ -39,6 +78,7 @@ namespace Telemetry.Server
                     if (receiverType != null)
                     {
                         var plugin = (IReceiver)Activator.CreateInstance(type);
+                        plugin.OnMessageReceive += Receiver_OnMessageReceive;
                         _receivers.Add(plugin);
                     }
                 }
@@ -50,12 +90,21 @@ namespace Telemetry.Server
             foreach (var receiver in _receivers)
             {
                 receiver.Start();
-                receiver.OnMessageReceive += Receiver_OnMessageReceive;
+            }
+        }
+
+        public void Stop()
+        {
+            foreach (var receiver in _receivers)
+            {
+                receiver.Stop();
             }
         }
 
         private void Receiver_OnMessageReceive(MessageEventArgs obj)
         {
+            SendData(obj.SensorId, obj.ValueName, obj.Payload);
+            OnMessageReceived?.Invoke(this, obj);
         }
 
         private async void SendData(Guid sensorId, string name, ISensorData payload)

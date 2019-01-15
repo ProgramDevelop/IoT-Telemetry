@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.IO;
-using System.Runtime.Loader;
-using Telemetry.Base.Interfaces;
 
 namespace Telemetry.Server
 {
@@ -9,13 +8,46 @@ namespace Telemetry.Server
     {
         static void Main(string[] args)
         {
-            //TODO: Create background task
-            var directory = AppDomain.CurrentDomain.BaseDirectory;
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
-            var serverManager = new ServerManager("http://localhost:5000", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoicGF2ZWwua3MxOTk2QGdtYWlsLmNvbSIsInN1YiI6InBhdmVsLmtzMTk5NkBnbWFpbC5jb20iLCJuYmYiOjE1NDc0MTgxNDAsImV4cCI6MTU1MDAxMDE0MCwiaXNzIjoiU01UVS1EZXYiLCJhdWQiOiJTTVRVLURldi1TZW5zb3JTZXJ2ZXIifQ.UdPpvSUG1vEEKsbHCRPZH2H59w_wUKIIadyMnGQFIRs");
-            serverManager.Load(directory);
+            IConfigurationRoot configuration = builder.Build();
 
-            serverManager.Start();
+            var credentials = configuration.GetSection("Credentials");
+            var login = credentials["email"];
+            var password = credentials["password"];
+            var server = configuration["server"];
+            var directory = configuration["directory"];
+
+            var serverManager = new ServerManager(server);
+
+            serverManager.OnMessageReceived += ServerManager_OnMessageReceived;
+
+            ToLog("Start authentification");
+            var result = serverManager.Authentificate(login, password).GetAwaiter().GetResult();
+            if(result)
+            {
+                ToLog("Authentification success");
+                serverManager.Load(directory);
+                ToLog("Plugins loaded");
+                serverManager.Start();
+                ToLog("Plugins started");
+            }
+            else
+            {
+                ToLog("Authentification failed");
+            }
+            Console.ReadKey();
+            ToLog("Stopping receivers");
+            serverManager.Stop();
+            ToLog("All receivers stopped");
+            Console.ReadKey();
         }
+
+        private static void ServerManager_OnMessageReceived(object sendler, Base.Interfaces.MessageEventArgs e) =>
+            ToLog($"To sensor {e.SensorId} sended value {e.ValueName} with data {e.Payload?.Data} in {e.Payload.DateTime}");
+
+        public static void ToLog(string message) => Console.WriteLine($"{DateTime.Now}: {message}");
     }
 }

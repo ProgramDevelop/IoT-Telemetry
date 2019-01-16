@@ -26,7 +26,7 @@ namespace Telemetry.Server
 
             ToLog("Start authentification");
             var result = serverManager.Authentificate(login, password).GetAwaiter().GetResult();
-            if(result)
+            if (result)
             {
                 ToLog("Authentification success");
                 serverManager.Load(directory);
@@ -38,11 +38,11 @@ namespace Telemetry.Server
             {
                 ToLog("Authentification failed");
             }
-            Console.ReadKey();
+            Console.ReadLine();
             ToLog("Stopping receivers");
             serverManager.Stop();
             ToLog("All receivers stopped");
-            Console.ReadKey();
+            Console.ReadLine();
         }
 
         private static void ServerManager_OnMessageReceived(object sendler, Base.Interfaces.MessageEventArgs e) =>

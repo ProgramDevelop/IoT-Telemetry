@@ -1,0 +1,39 @@
+﻿@model Telemetry.Web.ViewModels.Sensor.SensorInfoViewModel
+@{
+    ViewData["Title"] = $"Информация о датчике {Model.Name}";
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Информация о датчике @Model.Name</h2>
+    </div>
+    <div class="col-md-12">
+        <h4>Идентификатор датчика</h4>
+        <p>@Model.Id</p>
+        <h4>Описание</h4>
+        @{
+            var description = Model.Description ?? "Нет описания";
+        }
+        <p>@description</p>
+    </div>
+    <div class="col-md-12">
+        @Html.ActionLink("Добавить значения", "AddValueType", "Sensor", new { id = Model.Id })
+    </div>
+    <div class="col-md-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Описание</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var value in Model.Values)
+                {
+                    <tr><td>@Html.ActionLink(value.Name, "GetValue", "Sensor", new { id = value.SensorId, name = value.Name })</td><td>@value.Type</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

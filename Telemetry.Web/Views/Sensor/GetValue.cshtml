@@ -1,0 +1,29 @@
+﻿@model Telemetry.Web.ViewModels.Sensor.SensorValuesList
+@{
+    ViewData["Title"] = $"";
+}
+
+@if (Model.ValueType == Telemetry.Base.PayloadType.Number)
+    {
+        var values = Model.Values.Select(v => new Telemetry.Web.ViewModels.Shared.ChartValue { Value = double.Parse(v.Data), Name = v.DateTime.ToString() }).ToArray();
+    await Html.RenderPartialAsync("LineChart", values);
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Данные</th>
+                    <th>Время</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var value in Model.Values)
+                {
+                    <tr><td>@value.Data</td><td>@value.DateTime</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
